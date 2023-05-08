@@ -1,8 +1,10 @@
 # Ultralytics YOLO 🚀, GPL-3.0 license
 
 import hydra
+import datetime
 import torch
 import argparse
+import pandas as pd
 import time
 from pathlib import Path
 import math
@@ -432,16 +434,15 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
             for d, line in lines:
                 if intersect(data_deque[id][0], data_deque[id][1], line[0], line[1]):
                     if id in vehicle_entries:
-                        v = vehicle_entries[vehicle_id]
+                        v = vehicle_entries[id]
                         v['exit_point'] = d
-                        v['current_time'] = time.time()
                     else:
                         v = {
                             'id': id,
                             'type': obj_name,
                             'entry_point': d,
                             'exit_point': None,
-                            'current_time': time.time()
+                            'entry_time': datetime.datetime.fromtimestamp(time.time()).strftime('%H:%M:%S')
                         }
                         vehicle_entries[id] = v
 
@@ -495,7 +496,13 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
         #     cv2.putText(img, 'Number of Vehicles Leaving (W to E)', (width - 500, height - 15), 0, 1, [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
         #     cv2.line(img, (width - 150, height - 25), (width, height - 25), [85, 45, 255], 30)
         #     cv2.putText(img, cnt_str3, (width - 150, height - 35), 0, 1, [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
-    print("vehicles entry array", vehicle_entered)
+    
+    print("vehicles entries", vehicle_entries)
+    
+    df = pd.DataFrame.from_dict(vehicle_entries, orient='index')
+    filename = "output.xlsx"
+    df.to_excel(filename, index=False)
+
     return img
 
 
