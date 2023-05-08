@@ -150,25 +150,25 @@ def ccw(A,B,C):
 
 
 # def get_direction(point1, point2):
-    direction_str = ""
+    # direction_str = ""
 
-    # calculate y axis direction
-    if point1[1] > point2[1]:
-        direction_str += "South"
-    elif point1[1] < point2[1]:
-        direction_str += "North"
-    else:
-        direction_str += ""
+    # # calculate y axis direction
+    # if point1[1] > point2[1]:
+    #     direction_str += "South"
+    # elif point1[1] < point2[1]:
+    #     direction_str += "North"
+    # else:
+    #     direction_str += ""
 
-    # calculate x axis direction
-    if point1[0] > point2[0]:
-        direction_str += "East"
-    elif point1[0] < point2[0]:
-        direction_str += "West"
-    else:
-        direction_str += ""
+    # # calculate x axis direction
+    # if point1[0] > point2[0]:
+    #     direction_str += "East"
+    # elif point1[0] < point2[0]:
+    #     direction_str += "West"
+    # else:
+    #     direction_str += ""
 
-    return direction_str
+    # return direction_str
 
 def get_direction(start_point, end_point):
     """
@@ -219,7 +219,7 @@ def select_lines(img):
                     current_line.append((x, y))  # Add the ending point of the line
 
                     if len(current_line) == 2:
-                        lines.append(current_line)  # Add the completed line to the lines list
+                        lines.append((direction_names[len(lines)], current_line))  # Add the completed line to the lines list
                         print(lines)
                         print("current line", current_line)
                         current_line = []  # Reset the current line
@@ -247,6 +247,9 @@ def find_center_point(line):
     return int(center_x), int(center_y)
 
 
+vehicle_entered = []
+vehicle_entries = {}
+
 def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
     # cv2.line(img, line[0], line[1], (46,162,112), 3)
     if draw_boxes.frame_count == 0:  # Call select_lines method only for the first frame
@@ -258,10 +261,10 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
     print("lines length", len(lines))
     print("out")
     # Draw lines
-    for line in lines:
+    for direction, line in lines:
         print("line points", (line[0][0], line[0][1]), (line[1][0], line[1][1]))
         cv2.line(img, (line[0][0], line[0][1]), (line[1][0], line[1][1]), (6, 2, 255), 3)
-        direction = get_direction((line[0][0], line[0][1]), (line[1][0], line[1][1]))
+        
         cx, cy = find_center_point(line)
         print(cx, cy)
         cv2.putText(img, direction, (cx,cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
@@ -288,14 +291,16 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
 
         # create new buffer for new object
         if id not in data_deque:  
+          print("id", id)
           data_deque[id] = deque(maxlen= 64)
           speed_line_queue[id] = []
         color = compute_color_for_labels(object_id[i])
         obj_name = names[object_id[i]]
-        label = obj_name
+        label = '{}{:d}'.format("", id) + ":"+ '%s' % (obj_name)
 
         # add center to buffer
         data_deque[id].appendleft(center)
+        print(data_deque[id])
         if len(data_deque[id]) >= 2:
             direction = get_direction(data_deque[id][0], data_deque[id][1])
             object_speed = estimatespeed(data_deque[id][1], data_deque[id][0])
@@ -304,57 +309,149 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
             entry_detected = False
             exit_detected = False
             
-            for line in lines:
-                if intersect(data_deque[id][0], data_deque[id][1], line[0], line[1]):
-                    cv2.line(img, line[0], line[1], (255, 255, 255), 3)
-                    
-                    if "South" in direction:
-                        if not entry_detected and not exit_detected:
-                            if obj_name not in object_counter:
-                                object_counter[obj_name] = 1
-                            else:
-                                object_counter[obj_name] += 1
-                            entry_detected = True
-                        elif entry_detected and not exit_detected:
-                            if obj_name in object_counter:
-                                object_counter[obj_name] -= 1
-                            exit_detected = True
-                    elif "North" in direction:
-                        if not entry_detected and not exit_detected:
-                            if obj_name not in object_counter1:
-                                object_counter1[obj_name] = 1
-                            else:
-                                object_counter1[obj_name] += 1
-                            entry_detected = True
-                        elif entry_detected and not exit_detected:
-                            if obj_name in object_counter1:
-                                object_counter1[obj_name] -= 1
-                            exit_detected = True
-                    elif "East" in direction:
-                        if not entry_detected and not exit_detected:
-                            if obj_name not in object_counter2:
-                                object_counter2[obj_name] = 1
-                            else:
-                                object_counter2[obj_name] += 1
-                            entry_detected = True
-                        elif entry_detected and not exit_detected:
-                            if obj_name in object_counter2:
-                                object_counter2[obj_name] -= 1
-                            exit_detected = True
-                    elif "West" in direction:
-                        if not entry_detected and not exit_detected:
-                            if obj_name not in object_counter3:
-                                object_counter3[obj_name] = 1
-                            else:
-                                object_counter3[obj_name] += 1
-                            entry_detected = True
-                        elif entry_detected and not exit_detected:
-                            if obj_name in object_counter3:
-                                object_counter3[obj_name] -= 1
-                            exit_detected = True
-                    else:
-                        pass
+            # for d, line in lines:
+            #     # print("id", id)
+            #     if intersect(data_deque[id][0], data_deque[id][1], line[0], line[1]):
+            #         cv2.line(img, line[0], line[1], (255, 255, 255), 3)
+            #         v = {}
+            #         v['id'] = id
+            #         v['type'] = obj_name
 
+            #         if d == "south":
+            #             if not entry_detected and not exit_detected:
+            #                 if obj_name not in object_counter:
+            #                     object_counter[obj_name] = 1
+            #                 else:
+            #                     object_counter[obj_name] += 1
+            #                 entry_detected = True
+            #                 v['entry_point'] = d 
+
+            #             elif entry_detected and not exit_detected:
+            #                 if obj_name in object_counter:
+            #                     object_counter[obj_name] -= 1
+            #                 exit_detected = True
+            #                 v['exit_point'] = d 
+
+            #         elif d=="north":
+            #             if not entry_detected and not exit_detected:
+            #                 if obj_name not in object_counter1:
+            #                     object_counter1[obj_name] = 1
+            #                 else:
+            #                     object_counter1[obj_name] += 1
+            #                 entry_detected = True
+            #                 v['entry_point'] = d 
+
+            #             elif entry_detected and not exit_detected:
+            #                 if obj_name in object_counter1:
+            #                     object_counter1[obj_name] -= 1
+            #                 exit_detected = True
+            #                 v['exit_point'] = d 
+                    
+            #         elif d == "east":
+            #             if not entry_detected and not exit_detected:
+            #                 if obj_name not in object_counter2:
+            #                     object_counter2[obj_name] = 1
+            #                 else:
+            #                     object_counter2[obj_name] += 1
+            #                 entry_detected = True
+            #                 v['entry_point'] = d 
+
+            #             elif entry_detected and not exit_detected:
+            #                 if obj_name in object_counter2:
+            #                     object_counter2[obj_name] -= 1
+            #                 exit_detected = True
+            #                 v['exit_point'] = d 
+                    
+            #         elif d=="west":
+            #             if not entry_detected and not exit_detected:
+            #                 if obj_name not in object_counter3:
+            #                     object_counter3[obj_name] = 1
+            #                 else:
+            #                     object_counter3[obj_name] += 1
+            #                 entry_detected = True
+            #                 v['entry_point'] = d 
+
+            #             elif entry_detected and not exit_detected:
+            #                 if obj_name in object_counter3:
+            #                     object_counter3[obj_name] -= 1
+            #                 exit_detected = True
+            #                 v['exit_point'] = d 
+            #         else:
+            #             pass
+                    
+            #         vehicle_entered.append(v)
+
+        #     for d, line in lines:
+        #         if intersect(data_deque[id][0], data_deque[id][1], line[0], line[1]):
+        #             v = {
+        #                 'id': id,
+        #                 'type': obj_name,
+        #                 'entry_point': None,
+        #                 'exit_point': None,
+        #                 'current_time': time.time()
+        #             }
+
+        #             if d == 'north':
+        #                 if not entry_detected and not exit_detected:
+        #                     entry_detected = True
+        #                     v['entry_point'] = d
+        #                 elif entry_detected and not exit_detected:
+        #                     exit_detected = True
+        #                     v['exit_point'] = d
+
+        #             elif d == 'south':
+        #                 if not entry_detected and not exit_detected:
+        #                     entry_detected = True
+        #                     v['entry_point'] = d
+        #                 elif entry_detected and not exit_detected:
+        #                     exit_detected = True
+        #                     v['exit_point'] = d
+
+        #             elif d == 'east':
+        #                 if not entry_detected and not exit_detected:
+        #                     entry_detected = True
+        #                     v['entry_point'] = d
+        #                 elif entry_detected and not exit_detected:
+        #                     exit_detected = True
+        #                     v['exit_point'] = d
+
+        #             elif d == 'west':
+        #                 if not entry_detected and not exit_detected:
+        #                     entry_detected = True
+        #                     v['entry_point'] = d
+        #                 elif entry_detected and not exit_detected:
+        #                     exit_detected = True
+        #                     v['exit_point'] = d
+
+        #             vehicle_entered.append(v)
+
+        # print("Vehicle Entry Data:")
+        # for entry in vehicle_entered:
+        #     print(entry)
+
+            for d, line in lines:
+                if intersect(data_deque[id][0], data_deque[id][1], line[0], line[1]):
+                    if id in vehicle_entries:
+                        v = vehicle_entries[vehicle_id]
+                        v['exit_point'] = d
+                        v['current_time'] = time.time()
+                    else:
+                        v = {
+                            'id': id,
+                            'type': obj_name,
+                            'entry_point': d,
+                            'exit_point': None,
+                            'current_time': time.time()
+                        }
+                        vehicle_entries[id] = v
+
+        print("Vehicle Entry Data:")
+        for vehicle_id, vehicle_entry in vehicle_entries.items():
+            print(vehicle_entry)
+
+
+
+        
         UI_box(box, img, label=label, color=color, line_thickness=2)
         # draw trail
         for i in range(1, len(data_deque[id])):
@@ -367,10 +464,10 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
             cv2.line(img, data_deque[id][i - 1], data_deque[id][i], color, thickness)
     
     #4. Display Count in top right corner
-        print("object_counter1", object_counter1)   # North
-        print("object_counter0", object_counter)    # South
-        print("object_counter2", object_counter2)   # East
-        print("object_counter3", object_counter3)   # West
+        print("North", object_counter1)   # North
+        print("South", object_counter)    # South
+        print("East", object_counter2)   # East
+        print("West", object_counter3)   # West
         # for idx, (key, value) in enumerate(object_counter1.items()):
         #     cnt_str = str(key) + ":" + str(value)
         #     cv2.line(img, (width - 500, 25), (width, 25), [85, 45, 255], 40)
@@ -398,7 +495,7 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
         #     cv2.putText(img, 'Number of Vehicles Leaving (W to E)', (width - 500, height - 15), 0, 1, [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
         #     cv2.line(img, (width - 150, height - 25), (width, height - 25), [85, 45, 255], 30)
         #     cv2.putText(img, cnt_str3, (width - 150, height - 35), 0, 1, [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
-
+    print("vehicles entry array", vehicle_entered)
     return img
 
 
