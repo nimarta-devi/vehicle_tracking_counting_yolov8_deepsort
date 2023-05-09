@@ -16,27 +16,18 @@ from ultralytics.yolo.engine.predictor import BasePredictor
 from ultralytics.yolo.utils import DEFAULT_CONFIG, ROOT, ops
 from ultralytics.yolo.utils.checks import check_imgsz
 from ultralytics.yolo.utils.plotting import Annotator, colors, save_one_box
-
 import cv2
 from deep_sort_pytorch.utils.parser import get_config
 from deep_sort_pytorch.deep_sort import DeepSort
 from collections import deque
 import numpy as np
+
 palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
 data_deque = {}
-
 deepsort = None
-
-object_counter = {}
-
-object_counter1 = {}
-
-object_counter2 = {}
-
-object_counter3 = {}
-
 line = [(100, 500), (1050, 500)]
 speed_line_queue = {}
+
 def estimatespeed(Location1, Location2):
     #Euclidean Distance Formula
     d_pixel = math.sqrt(math.pow(Location2[0] - Location1[0], 2) + math.pow(Location2[1] - Location1[1], 2))
@@ -58,7 +49,7 @@ def init_tracker():
                             nms_max_overlap=cfg_deep.DEEPSORT.NMS_MAX_OVERLAP, max_iou_distance=cfg_deep.DEEPSORT.MAX_IOU_DISTANCE,
                             max_age=cfg_deep.DEEPSORT.MAX_AGE, n_init=cfg_deep.DEEPSORT.N_INIT, nn_budget=cfg_deep.DEEPSORT.NN_BUDGET,
                             use_cuda=True)
-##########################################################################################
+
 def xyxy_to_xywh(*xyxy):
     """" Calculates the relative bounding box from absolute pixel values. """
     bbox_left = min([xyxy[0].item(), xyxy[2].item()])
@@ -149,28 +140,6 @@ def intersect(A,B,C,D):
 
 def ccw(A,B,C):
     return (C[1]-A[1]) * (B[0]-A[0]) > (B[1]-A[1]) * (C[0]-A[0])
-
-
-# def get_direction(point1, point2):
-    # direction_str = ""
-
-    # # calculate y axis direction
-    # if point1[1] > point2[1]:
-    #     direction_str += "South"
-    # elif point1[1] < point2[1]:
-    #     direction_str += "North"
-    # else:
-    #     direction_str += ""
-
-    # # calculate x axis direction
-    # if point1[0] > point2[0]:
-    #     direction_str += "East"
-    # elif point1[0] < point2[0]:
-    #     direction_str += "West"
-    # else:
-    #     direction_str += ""
-
-    # return direction_str
 
 def get_direction(start_point, end_point):
     """
@@ -307,129 +276,6 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
             direction = get_direction(data_deque[id][0], data_deque[id][1])
             object_speed = estimatespeed(data_deque[id][1], data_deque[id][0])
             speed_line_queue[id].append(object_speed)
-            
-            entry_detected = False
-            exit_detected = False
-            
-            # for d, line in lines:
-            #     # print("id", id)
-            #     if intersect(data_deque[id][0], data_deque[id][1], line[0], line[1]):
-            #         cv2.line(img, line[0], line[1], (255, 255, 255), 3)
-            #         v = {}
-            #         v['id'] = id
-            #         v['type'] = obj_name
-
-            #         if d == "south":
-            #             if not entry_detected and not exit_detected:
-            #                 if obj_name not in object_counter:
-            #                     object_counter[obj_name] = 1
-            #                 else:
-            #                     object_counter[obj_name] += 1
-            #                 entry_detected = True
-            #                 v['entry_point'] = d 
-
-            #             elif entry_detected and not exit_detected:
-            #                 if obj_name in object_counter:
-            #                     object_counter[obj_name] -= 1
-            #                 exit_detected = True
-            #                 v['exit_point'] = d 
-
-            #         elif d=="north":
-            #             if not entry_detected and not exit_detected:
-            #                 if obj_name not in object_counter1:
-            #                     object_counter1[obj_name] = 1
-            #                 else:
-            #                     object_counter1[obj_name] += 1
-            #                 entry_detected = True
-            #                 v['entry_point'] = d 
-
-            #             elif entry_detected and not exit_detected:
-            #                 if obj_name in object_counter1:
-            #                     object_counter1[obj_name] -= 1
-            #                 exit_detected = True
-            #                 v['exit_point'] = d 
-                    
-            #         elif d == "east":
-            #             if not entry_detected and not exit_detected:
-            #                 if obj_name not in object_counter2:
-            #                     object_counter2[obj_name] = 1
-            #                 else:
-            #                     object_counter2[obj_name] += 1
-            #                 entry_detected = True
-            #                 v['entry_point'] = d 
-
-            #             elif entry_detected and not exit_detected:
-            #                 if obj_name in object_counter2:
-            #                     object_counter2[obj_name] -= 1
-            #                 exit_detected = True
-            #                 v['exit_point'] = d 
-                    
-            #         elif d=="west":
-            #             if not entry_detected and not exit_detected:
-            #                 if obj_name not in object_counter3:
-            #                     object_counter3[obj_name] = 1
-            #                 else:
-            #                     object_counter3[obj_name] += 1
-            #                 entry_detected = True
-            #                 v['entry_point'] = d 
-
-            #             elif entry_detected and not exit_detected:
-            #                 if obj_name in object_counter3:
-            #                     object_counter3[obj_name] -= 1
-            #                 exit_detected = True
-            #                 v['exit_point'] = d 
-            #         else:
-            #             pass
-                    
-            #         vehicle_entered.append(v)
-
-        #     for d, line in lines:
-        #         if intersect(data_deque[id][0], data_deque[id][1], line[0], line[1]):
-        #             v = {
-        #                 'id': id,
-        #                 'type': obj_name,
-        #                 'entry_point': None,
-        #                 'exit_point': None,
-        #                 'current_time': time.time()
-        #             }
-
-        #             if d == 'north':
-        #                 if not entry_detected and not exit_detected:
-        #                     entry_detected = True
-        #                     v['entry_point'] = d
-        #                 elif entry_detected and not exit_detected:
-        #                     exit_detected = True
-        #                     v['exit_point'] = d
-
-        #             elif d == 'south':
-        #                 if not entry_detected and not exit_detected:
-        #                     entry_detected = True
-        #                     v['entry_point'] = d
-        #                 elif entry_detected and not exit_detected:
-        #                     exit_detected = True
-        #                     v['exit_point'] = d
-
-        #             elif d == 'east':
-        #                 if not entry_detected and not exit_detected:
-        #                     entry_detected = True
-        #                     v['entry_point'] = d
-        #                 elif entry_detected and not exit_detected:
-        #                     exit_detected = True
-        #                     v['exit_point'] = d
-
-        #             elif d == 'west':
-        #                 if not entry_detected and not exit_detected:
-        #                     entry_detected = True
-        #                     v['entry_point'] = d
-        #                 elif entry_detected and not exit_detected:
-        #                     exit_detected = True
-        #                     v['exit_point'] = d
-
-        #             vehicle_entered.append(v)
-
-        # print("Vehicle Entry Data:")
-        # for entry in vehicle_entered:
-        #     print(entry)
 
             for d, line in lines:
                 if intersect(data_deque[id][0], data_deque[id][1], line[0], line[1]):
@@ -450,9 +296,6 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
         for vehicle_id, vehicle_entry in vehicle_entries.items():
             print(vehicle_entry)
 
-
-
-        
         UI_box(box, img, label=label, color=color, line_thickness=2)
         # draw trail
         for i in range(1, len(data_deque[id])):
@@ -463,40 +306,7 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
             thickness = int(np.sqrt(64 / float(i + i)) * 1.5)
             # draw trails
             cv2.line(img, data_deque[id][i - 1], data_deque[id][i], color, thickness)
-    
-    #4. Display Count in top right corner
-        print("North", object_counter1)   # North
-        print("South", object_counter)    # South
-        print("East", object_counter2)   # East
-        print("West", object_counter3)   # West
-        # for idx, (key, value) in enumerate(object_counter1.items()):
-        #     cnt_str = str(key) + ":" + str(value)
-        #     cv2.line(img, (width - 500, 25), (width, 25), [85, 45, 255], 40)
-        #     cv2.putText(img, 'Number of Vehicles Entering', (width - 500, 35), 0, 1, [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
-        #     cv2.line(img, (width - 150, 65 + (idx * 40)), (width, 65 + (idx * 40)), [85, 45, 255], 30)
-        #     cv2.putText(img, cnt_str, (width - 150, 75 + (idx * 40)), 0, 1, [255, 255, 255], thickness=2, lineType=cv2.LINE_AA)
-
-        # for idx, (key, value) in enumerate(object_counter.items()):
-        #     cnt_str1 = str(key) + ":" + str(value)
-        #     cv2.line(img, (20, 25), (500, 25), [85, 45, 255], 40)
-        #     cv2.putText(img, 'Number of Vehicles Leaving', (11, 35), 0, 1, [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
-        #     cv2.line(img, (20, 65 + (idx * 40)), (127, 65 + (idx * 40)), [85, 45, 255], 30)
-        #     cv2.putText(img, cnt_str1, (11, 75 + (idx * 40)), 0, 1, [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
-            
-        # for idx, (key, value) in enumerate(object_counter2.items()):
-        #     cnt_str2 = str(key) + ":" + str(value)
-        #     cv2.line(img, (20, height - 65 - (idx * 40)), (127, height - 65 - (idx * 40)), [85, 45, 255], 30)
-        #     cv2.putText(img, 'Number of Vehicles Entering', (11, height - 55), 0, 1, [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
-        #     cv2.line(img, (20, height - 25), (500, height - 25), [85, 45, 255], 40)
-        #     cv2.putText(img, cnt_str2, (11, height - 95 - (idx * 40)), 0, 1, [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
-            
-        # for idx, (key, value) in enumerate(object_counter3.items()):
-        #     cnt_str3 = str(key) + ":" + str(value)
-        #     cv2.line(img, (width - 500, height - 25), (width, height - 25), [85, 45, 255], 40)
-        #     cv2.putText(img, 'Number of Vehicles Leaving (W to E)', (width - 500, height - 15), 0, 1, [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
-        #     cv2.line(img, (width - 150, height - 25), (width, height - 25), [85, 45, 255], 30)
-        #     cv2.putText(img, cnt_str3, (width - 150, height - 35), 0, 1, [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
-    
+        
     print("vehicles entries", vehicle_entries)
     
     df = pd.DataFrame.from_dict(vehicle_entries, orient='index')
@@ -581,7 +391,7 @@ class DetectionPredictor(BasePredictor):
             bbox_xyxy = outputs[:, :4]
             identities = outputs[:, -2]
             object_id = outputs[:, -1]
-            
+
             draw_boxes(im0, bbox_xyxy, self.model.names, object_id,identities)
 
         return log_string
@@ -592,10 +402,9 @@ def predict(cfg):
     init_tracker()
     cfg.model = cfg.model or "yolov8n.pt"
     cfg.imgsz = check_imgsz(cfg.imgsz, min_dim=2)  # check image size
-    cfg.source = cfg.source if cfg.source is not None else ROOT / "assets"
+    cfg.source = 'test4.mp4'
     predictor = DetectionPredictor(cfg)
     predictor()
-
 
 if __name__ == "__main__":
     predict()
