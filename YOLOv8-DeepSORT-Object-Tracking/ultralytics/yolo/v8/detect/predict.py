@@ -397,14 +397,16 @@ class DetectionPredictor(BasePredictor):
         return log_string
 
 
+video_src = ""
 @hydra.main(version_base=None, config_path=str(DEFAULT_CONFIG.parent), config_name=DEFAULT_CONFIG.name)
 def predict(cfg):
     init_tracker()
-    cfg.model = cfg.model or "yolov8n.pt"
+    cfg.model = "yolov8n.pt"
     cfg.imgsz = check_imgsz(cfg.imgsz, min_dim=2)  # check image size
-    cfg.source = 'test4.mp4'
+    cfg.source = video_src
     predictor = DetectionPredictor(cfg)
     predictor()
 
 if __name__ == "__main__":
+    video_src = "test4.mp4"
     predict()
