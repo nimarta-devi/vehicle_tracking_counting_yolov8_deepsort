@@ -407,7 +407,6 @@ class DetectionPredictor(BasePredictor):
         return log_string
 
 
-video_path = '' 
 def set_path(file):
     video_path = file
     print(video_path)
@@ -419,10 +418,11 @@ def predict(cfg):
     init_tracker()
     cfg.model = "yolov8n.pt"
     cfg.imgsz = check_imgsz(cfg.imgsz, min_dim=2)  # check image size
-    cfg.source = video_path
+    cfg.source = "my_video.mp4"
+    print("cfg.source", cfg.source)
     predictor = DetectionPredictor(cfg)
     predictor()
 
 if __name__ == "__main__":
-    video_src = "test4.mp4"
+    video_src = "my_video.mp4"
     predict()

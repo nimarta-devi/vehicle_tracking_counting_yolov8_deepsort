@@ -1,6 +1,6 @@
 import cv2
 from flask import Flask, render_template, request, redirect, Response
-from predict import predict, set_path
+from predict import predict, set_path, video_src
 app = Flask(__name__)
 
 import logging
@@ -26,31 +26,31 @@ def process_video():
     video_file = request.files['video']
     video_path = 'my_video.mp4'  # Provide the path where you want to save the video
 
-    # # Save the uploaded video file
+    # Save the uploaded video file
     video_file.save(video_path)
 
     # Open the video using OpenCV
-    cap = cv2.VideoCapture(video_path)
-    video_src = 'video.mp4'  # Set the video source path
-    file = set_path(video_file)
-    app.logger.info(file)
-    predict()
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
+    # cap = cv2.VideoCapture(video_path)
+    #video_src = 'video.mp4'  # Set the video source path
+    # file = set_path(video_file.filename)
 
-        # Process the frame (e.g., perform object detection using your YOLO v8 model)
-        # ...
+    # video_src= 
+    # app.logger.info(file)
+    predict()
+    # while True:
+    #     ret, frame = cap.read()
+    #     if not ret:
+    #         break
+
 
         # Display the processed frame
-        cv2.imshow('Processed Frame', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        # cv2.imshow('Processed Frame', frame)
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
 
     # Release the video capture and destroy any OpenCV windows
-    cap.release()
-    cv2.destroyAllWindows()
+    # cap.release()
+    # cv2.destroyAllWindows()
 
     return 'Video processed successfully!'
 

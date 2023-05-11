@@ -85,30 +85,30 @@
         crossorigin="anonymous"></script>
 
 <script>
-    function loadVideo(files) {
-        const videoPlayer = document.getElementById('video-player');
-        const file = files[0];
-        // check if file is a video
-        if (file.type.indexOf('video') === 0) {
-            const fileURL = URL.createObjectURL(file);
-            videoPlayer.src = fileURL;
-            alert(fileURL)
-            videoPlayer.play(); // play the video
-            // Create a FormData object and append the video file
-            const formData = new FormData();
-            formData.append('video', file);
-            $.ajax({
-                url: "/prediction",
-                type: "POST",
-                success: function (response) {
-                    alert("Python file executed successfully!");
-                    console.log(response);
-                },
-                error: function (xhr) {
-                    alert("Error occurred while executing Python file.");
-                    console.log(xhr);
-                }
-            });
+    // function loadVideo(files) {
+    //     const videoPlayer = document.getElementById('video-player');
+    //     const file = files[0];
+    //     // check if file is a video
+    //     if (file.type.indexOf('video') === 0) {
+    //         const fileURL = URL.createObjectURL(file);
+    //         videoPlayer.src = fileURL;
+    //         alert(fileURL)
+    //         videoPlayer.play(); // play the video
+    //         // Create a FormData object and append the video file
+    //         const formData = new FormData();
+    //         formData.append('video', file);
+    //         $.ajax({
+    //             url: "/prediction",
+    //             type: "POST",
+    //             success: function (response) {
+    //                 alert("Python file executed successfully!");
+    //                 console.log(response);
+    //             },
+    //             error: function (xhr) {
+    //                 alert("Error occurred while executing Python file.");
+    //                 console.log(xhr);
+    //             }
+    //         });
 
             // Make a POST request to the Flask route
             //     fetch('/prediction', {
@@ -127,7 +127,7 @@
             // } else {
             //     alert('Please select a valid video file.');
             // }
-        }}
+        // }}
 
     // function handleStartClick() {
     //     $.ajax({
