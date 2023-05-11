@@ -407,13 +407,19 @@ class DetectionPredictor(BasePredictor):
         return log_string
 
 
+video_path = '' 
+def set_path(file):
+    video_path = file
+    print(video_path)
+    return video_path
+
 video_src = ""
 @hydra.main(version_base=None, config_path=str(DEFAULT_CONFIG.parent), config_name=DEFAULT_CONFIG.name)
 def predict(cfg):
     init_tracker()
     cfg.model = "yolov8n.pt"
     cfg.imgsz = check_imgsz(cfg.imgsz, min_dim=2)  # check image size
-    cfg.source = video_src
+    cfg.source = video_path
     predictor = DetectionPredictor(cfg)
     predictor()
 

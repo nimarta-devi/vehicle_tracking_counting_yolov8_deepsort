@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <title>Vehicle Tracking System</title>
+  <style>
+    .loading-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+    }
+
+    .spinner-border {
+      width: 5rem;
+      height: 5rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="mt-4 mb-4 ml-4">Vehicle Tracking System</h1>
+
+    <div class="loading-bar">
+      <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...
+        </span>
+        
+      </div>
+    </div>
+
+    <div class="row mt-4 mb-4">
+      <div class="col-md-6">
+        <div class="btn-group-vertical">
+          <button type="button" class="btn btn-primary" onclick="processData()">Choose</button>
+          <button type="button" class="btn btn-primary">Download Excel File</button>
+          <button type="button" class="btn btn-primary">Download Video</button>
+          <button type="button" class="btn btn-primary">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script>
+      function processData() {
+        $.ajax({
+            url: '/process_video',
+            type: "POST",
+            success: function (response) {
+                // Display the response message
+                alert(response);
+            },
+            error: function (xhr, status, error) {
+                // Handle any errors
+                console.log(error);
+            }
+        });
+      }
+    </script>
+  </script>
+
+</body>
+
+</html>
