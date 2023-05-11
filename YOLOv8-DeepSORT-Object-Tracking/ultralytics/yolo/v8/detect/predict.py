@@ -37,8 +37,8 @@ def estimatespeed(Location1, Location2):
     time_constant = 15*3.6
     #distance = speed/time
     speed = d_meters * time_constant
-
     return int(speed)
+
 def init_tracker():
     global deepsort
     cfg_deep = get_config()
@@ -75,12 +75,8 @@ def xyxy_to_tlwh(bbox_xyxy):
     return tlwh_bboxs
 
 def compute_color_for_labels(label):
-    """
-    Simple function that adds fixed color depending on the class
-    """
-    if label == 0: #person
-        color = (85,45,255)
-    elif label == 2: # Car
+    """Simple function that adds fixed color depending on the class"""
+    if label == 2: # Car
         color = (222,82,175)
     elif label == 3:  # Motobike
         color = (0, 204, 255)
@@ -221,7 +217,7 @@ def find_center_point(line):
 vehicle_entered = []
 vehicle_entries = {}
 
-def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
+def draw_boxes(img, bbox, names, object_id, identities=None, offset=(0, 0)):
     # cv2.line(img, line[0], line[1], (46,162,112), 3)
     if draw_boxes.frame_count == 0:  # Call select_lines method only for the first frame
         lines = select_lines(img)
@@ -267,6 +263,19 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
           speed_line_queue[id] = []
         color = compute_color_for_labels(object_id[i])
         obj_name = names[object_id[i]]
+        print('obj_name', obj_name)
+        
+        if obj_name == 'car':
+            obj_name = 'car/taxi'
+        elif obj_name == 'bicycle':
+            obj_name = 'light vehicle'
+        elif obj_name == 'motorcycle':
+            obj_name = 'light vehicle'
+        elif obj_name=='truck':
+            obj_name='truck'
+        elif obj_name=='bus':
+            obj_name='bus'
+
         label = '{}{:d}'.format("", id) + ":"+ '%s' % (obj_name)
 
         # add center to buffer
@@ -367,6 +376,7 @@ class DetectionPredictor(BasePredictor):
         det = preds[idx]
         all_outputs.append(det)
         if len(det) == 0:
+            print("log string", log_string)
             return log_string
         for c in det[:, 5].unique():
             n = (det[:, 5] == c).sum()  # detections per class
